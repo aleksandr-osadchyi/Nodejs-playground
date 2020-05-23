@@ -11,11 +11,22 @@ class WebApplication {
     handle(req, res) {
         res = expandResponse(res);
         let currentMiddleware = 0;
-        const next = () => {
+        const next = (error) => {
             currentMiddleware++;
             const middleware = this.middlewares[currentMiddleware - 1];
             if (middleware) {
-                middleware(req, res, next);
+                try {
+                    const isErrorMiddleware = middleware.length === 4;
+                    if (error && isErrorMiddleware) {
+                        return middleware(error, req, res, next);
+                    }
+                    if (error && !isErrorMiddleware) {
+                        return next(error);
+                    }
+                    middleware(req, res, next);
+                } catch (unhandledError) {
+                    next(unhandledError);
+                }
             }
         };
         next();

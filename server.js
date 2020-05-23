@@ -11,8 +11,16 @@ webApplication.get('/', (req, res) => {
 webApplication.get('/test-url', (req, res) => {
     res.text(req.path);
 });
-webApplication.use((req, res) => {
+webApplication.get('/error-url-with-error', (req, res) => {
+    let error = new Error('This is test error')
+    error.statusCode = 422;
+    throw error;
+});
+webApplication.use((req, res, next) => {
     res.text('404 page', 404);
+});
+webApplication.use((error, req, res, next) => {
+    res.text(error.toString(), error.statusCode || 500);
 });
 
 const server = http.createServer(webApplication.handle.bind(webApplication));
