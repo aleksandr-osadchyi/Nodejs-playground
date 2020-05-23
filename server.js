@@ -1,9 +1,13 @@
 const http = require('http');
 const {WebApplication} = require('./src/web-application');
+const {serveStatic} = require('./src/middlewares/serveStatic');
+const path = require('path');
 
 const hostname = '127.0.0.1';
 const port = 3000;
 const webApplication = new WebApplication();
+
+webApplication.use(serveStatic({publicFolder: path.join(__dirname, './public')}));
 
 webApplication.get('/', (req, res) => {
     res.text('Home page');
