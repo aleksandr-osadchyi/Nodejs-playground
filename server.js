@@ -6,11 +6,11 @@ const path = require('path');
 const hostname = '127.0.0.1';
 const port = 3000;
 const webApplication = new WebApplication();
+const publicFolderPath = path.join(__dirname, './public');
 
-webApplication.use(serveStatic({publicFolder: path.join(__dirname, './public')}));
-
+webApplication.use(serveStatic({publicFolder: publicFolderPath}));
 webApplication.get('/', (req, res) => {
-    res.text('Home page');
+    res.file(path.join(publicFolderPath, 'index.html'));
 });
 webApplication.get('/test-url', (req, res) => {
     res.text(req.path);

@@ -1,3 +1,7 @@
+const fs = require('fs');
+const util = require('util');
+const fsAccess = util.promisify(fs.access);
+
 const HTTP_METHODS = {
     GET: 'GET',
     POST: 'POST'
@@ -85,6 +89,15 @@ const expandResponse = (res) => {
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(json));
     };
+    res.file = async (pathToFile) => {
+        try {
+            await fsAccess(pathToFile, fs.constants.F_OK);
+            const stream = fs.createReadStream(pathToFile);
+            stream.pipe(res);
+        } catch (e) {
+            res.text('Not found', 404);
+        }
+    }
     return res;
 };
 
