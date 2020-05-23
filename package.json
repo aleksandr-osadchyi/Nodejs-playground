@@ -11,5 +11,8 @@
   "devDependencies": {
     "nodemon": "^2.0.4",
     "prettier": "^2.0.5"
+  },
+  "dependencies": {
+    "body-parser": "^1.19.0"
   }
 }

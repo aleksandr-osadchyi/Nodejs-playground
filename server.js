@@ -2,6 +2,7 @@ const http = require('http');
 const {Router} = require('./src/router');
 const {serveStatic} = require('./src/middlewares/serveStatic');
 const {requestJsonBodyParser} = require('./src/middlewares/requestJsonBodyParser');
+const bodyParser = require('body-parser');
 const path = require('path');
 
 const hostname = '127.0.0.1';
@@ -11,6 +12,7 @@ const publicFolderPath = path.join(__dirname, './public');
 
 router.use(serveStatic({publicFolder: publicFolderPath}));
 router.use(requestJsonBodyParser());
+router.use(bodyParser.urlencoded({ extended: false }));
 
 router.get('/', (req, res) => {
     res.file(path.join(publicFolderPath, 'index.html'));
