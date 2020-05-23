@@ -1,5 +1,5 @@
 const http = require('http');
-const {WebApplication} = require('./src/web-application');
+const {WebApplication} = require('./src/webApplication');
 const {serveStatic} = require('./src/middlewares/serveStatic');
 const path = require('path');
 
