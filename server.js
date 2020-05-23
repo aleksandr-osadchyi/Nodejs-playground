@@ -1,6 +1,7 @@
 const http = require('http');
 const {Router} = require('./src/router');
 const {serveStatic} = require('./src/middlewares/serveStatic');
+const {requestJsonBodyParser} = require('./src/middlewares/requestJsonBodyParser');
 const path = require('path');
 
 const hostname = '127.0.0.1';
@@ -9,6 +10,8 @@ const router = new Router();
 const publicFolderPath = path.join(__dirname, './public');
 
 router.use(serveStatic({publicFolder: publicFolderPath}));
+router.use(requestJsonBodyParser());
+
 router.get('/', (req, res) => {
     res.file(path.join(publicFolderPath, 'index.html'));
 });
@@ -19,6 +22,9 @@ router.get('/error', (req, res) => {
     let error = new Error('This is test error')
     error.statusCode = 422;
     throw error;
+});
+router.post('/post', (req, res) => {
+    res.json(req.body);
 });
 router.use((req, res, next) => {
     res.text('404 page', 404);
