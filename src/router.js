@@ -7,12 +7,13 @@ const HTTP_METHODS = {
     POST: 'POST'
 };
 
-class WebApplication {
+class Router {
     constructor() {
-        this.middlewares = [this.parsePath.bind(this)];
+        this.middlewares = [];
     }
 
     handle(req, res) {
+        req = expandRequest(req);
         res = expandResponse(res);
         let currentMiddleware = 0;
         const next = (error) => {
@@ -36,8 +37,35 @@ class WebApplication {
         next();
     }
 
-    use(middleware) {
-        this.middlewares.push(middleware);
+    use(...params) {
+        let firstArgument = params[0];
+        let url = undefined;
+        let middleware = undefined;
+        if (typeof firstArgument === "string") {
+            url = firstArgument;
+            middleware = params[1];
+        } else {
+            middleware = params[0];
+        }
+        const isErrorMiddleware = middleware.length === 4;
+        let rootHandler;
+        if (isErrorMiddleware) {
+            rootHandler = (error, req, res, next) => {
+                if (url && url !== req.path) {
+                    return next();
+                }
+                middleware(error, req, res, next);
+            };
+        } else {
+            rootHandler = (req, res, next) => {
+                if (!req.path.startsWith(url)) {
+                    return next();
+                }
+                middleware(req, res, next);
+            };
+        }
+
+        this.middlewares.push(rootHandler);
     }
 
     get(url, handler) {
@@ -48,21 +76,6 @@ class WebApplication {
         this.handleHttpMethod(HTTP_METHODS.POST, url, handler);
     }
 
-    parsePath(req, res, next) {
-        const urlParts = req.url.split('?');
-
-        req.path = urlParts[0];
-
-        const searchParams = new URLSearchParams(urlParts[1]);
-        let parsedSearchParams = {};
-        for (let [key, value] of searchParams.entries()) {
-            parsedSearchParams[key] = value;
-        }
-        req.parsedSearchParams = parsedSearchParams;
-
-        next();
-    }
-
     handleHttpMethod(method, url, handler) {
         let rootHandler = (req, res, next) => {
             if (req.method !== method) {
@@ -71,12 +84,26 @@ class WebApplication {
             if (req.path !== url) {
                 return next();
             }
-
             handler(req, res, next);
         };
-        this.use(rootHandler);
+        this.use(url, rootHandler);
     }
 }
+
+const expandRequest = (req) => {
+    const urlParts = req.url.split('?');
+
+    req.path = urlParts[0];
+
+    const searchParams = new URLSearchParams(urlParts[1]);
+    let parsedSearchParams = {};
+    for (let [key, value] of searchParams.entries()) {
+        parsedSearchParams[key] = value;
+    }
+    req.parsedSearchParams = parsedSearchParams;
+
+    return req;
+};
 
 const expandResponse = (res) => {
     res.text = (text, statusCode = 200) => {
@@ -101,8 +128,4 @@ const expandResponse = (res) => {
     return res;
 };
 
-const middleware = (req, res, next) => {
-    return next();
-}
-
-module.exports = {WebApplication};
+module.exports = {Router: Router};

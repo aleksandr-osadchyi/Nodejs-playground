@@ -1,33 +1,33 @@
 const http = require('http');
-const {WebApplication} = require('./src/webApplication');
+const {Router} = require('./src/router');
 const {serveStatic} = require('./src/middlewares/serveStatic');
 const path = require('path');
 
 const hostname = '127.0.0.1';
 const port = 3000;
-const webApplication = new WebApplication();
+const router = new Router();
 const publicFolderPath = path.join(__dirname, './public');
 
-webApplication.use(serveStatic({publicFolder: publicFolderPath}));
-webApplication.get('/', (req, res) => {
+router.use(serveStatic({publicFolder: publicFolderPath}));
+router.get('/', (req, res) => {
     res.file(path.join(publicFolderPath, 'index.html'));
 });
-webApplication.get('/test-url', (req, res) => {
+router.get('/test-url', (req, res) => {
     res.text(req.path);
 });
-webApplication.get('/error-url-with-error', (req, res) => {
+router.get('/error', (req, res) => {
     let error = new Error('This is test error')
     error.statusCode = 422;
     throw error;
 });
-webApplication.use((req, res, next) => {
+router.use((req, res, next) => {
     res.text('404 page', 404);
 });
-webApplication.use((error, req, res, next) => {
+router.use((error, req, res, next) => {
     res.text(error.toString(), error.statusCode || 500);
 });
 
-const server = http.createServer(webApplication.handle.bind(webApplication));
+const server = http.createServer(router.handle.bind(router));
 
 server.listen(port, hostname, () => {
     console.log(`Server running at http://${hostname}:${port}/`);
