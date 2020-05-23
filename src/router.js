@@ -51,14 +51,14 @@ class Router {
         let rootHandler;
         if (isErrorMiddleware) {
             rootHandler = (error, req, res, next) => {
-                if (url && url !== req.path) {
+                if (url && !req.path.startsWith(url)) {
                     return next();
                 }
                 middleware(error, req, res, next);
             };
         } else {
             rootHandler = (req, res, next) => {
-                if (!req.path.startsWith(url)) {
+                if (url && !req.path.startsWith(url)) {
                     return next();
                 }
                 middleware(req, res, next);

@@ -5,6 +5,9 @@ const fsAccess = util.promisify(fs.access);
 
 const serveStatic = ({publicFolder} = {}) => {
     return async (req, res, next) => {
+        if (req.method !== 'GET') {
+            return next();
+        }
         if (!/\.[a-z0-9]*$/i.test(req.path)) {
             return next();
         }
